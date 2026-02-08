@@ -7,13 +7,9 @@ Uses Git Trees API + PARALLEL fetching for MAXIMUM speed.
 import asyncio
 import aiohttp
 import base64
-import nest_asyncio
 from github import Github, GithubException
 from typing import List, Dict, Any, Optional
 from app.config.settings import settings
-
-# Allow nested event loops (needed for FastAPI + asyncio.run)
-nest_asyncio.apply()
 
 
 class GitHubScraper:
