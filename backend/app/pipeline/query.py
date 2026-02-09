@@ -7,7 +7,7 @@ import os
 from typing import List, Dict, Any, Optional
 
 from llama_index.core import Settings
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
+from llama_index.embeddings.openai import OpenAIEmbedding
 from supabase import create_client, Client
 
 from app.core.llm import generate_answer
@@ -28,10 +28,16 @@ class QueryPipeline:
         """
         self.user_id = user_id or "default"
         
-        # Initialize embedding model (must match ingest pipeline!)
-        print("Loading BGE-base embeddings model for query...")
-        self.embed_model = FastEmbedEmbedding(
-            model_name="BAAI/bge-base-en-v1.5"
+        # Initialize OpenAI embedding model via OpenRouter (must match ingest pipeline!)
+        print("Initializing OpenAI embeddings via OpenRouter for query...")
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_api_key:
+            raise ValueError("OPENROUTER_API_KEY is required for embeddings")
+        
+        self.embed_model = OpenAIEmbedding(
+            model="text-embedding-3-small",
+            api_key=openrouter_api_key,
+            api_base="https://openrouter.ai/api/v1"
         )
         Settings.embed_model = self.embed_model
         

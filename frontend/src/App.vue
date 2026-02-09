@@ -3,6 +3,10 @@ import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import api from './services/api.js'
 import { useAuth } from './composables/useAuth.js'
 import { useChatHistory } from './composables/useChatHistory.js'
+import MaintenancePage from './views/MaintenancePage.vue'
+
+// Maintenance Mode Check
+const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === 'true'
 
 // ========================================
 // AUTH & CHAT HISTORY
@@ -279,6 +283,11 @@ const handleSignOut = async () => {
 </script>
 
 <template>
+  <!-- Maintenance Mode -->
+  <MaintenancePage v-if="isMaintenanceMode" />
+  
+  <!-- Normal App -->
+  <template v-else>
   <!-- ========================================
        ANIMATED BACKGROUND (Shared)
        ======================================== -->
@@ -614,6 +623,7 @@ const handleSignOut = async () => {
       </div>
     </main>
   </div>
+  </template>
 </template>
 
 <script>
