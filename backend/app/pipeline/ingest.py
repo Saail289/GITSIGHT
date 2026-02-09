@@ -11,7 +11,7 @@ from pathlib import Path
 from llama_index.core import Document, Settings
 from llama_index.core.node_parser import SentenceSplitter, CodeSplitter
 from llama_index.core.schema import TextNode
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
+from llama_index.embeddings.openai import OpenAIEmbedding
 from supabase import create_client, Client
 
 # File extension to language mapping for AST parsing
@@ -43,7 +43,7 @@ class IngestPipeline:
     """
     Ingestion pipeline that processes documents with AST-aware code chunking.
     Uses CodeSplitter for supported languages, SentenceSplitter for others.
-    Uses batch embeddings for faster processing without accuracy loss.
+    Uses OpenAI embeddings via API for low memory footprint.
     """
     
     def __init__(self, user_id: Optional[str] = None):
@@ -55,10 +55,17 @@ class IngestPipeline:
         """
         self.user_id = user_id or "default"
         
-        # Initialize embedding model (BGE-base - faster than Jina, same accuracy)
-        print("Loading BGE-base embeddings model...")
-        self.embed_model = FastEmbedEmbedding(
-            model_name="BAAI/bge-base-en-v1.5"
+        # Initialize OpenAI embedding model via OpenRouter
+        # Uses text-embedding-3-small: $0.02/1M tokens, 1536 dimensions
+        print("Initializing OpenAI embeddings via OpenRouter...")
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_api_key:
+            raise ValueError("OPENROUTER_API_KEY is required for embeddings")
+        
+        self.embed_model = OpenAIEmbedding(
+            model="text-embedding-3-small",
+            api_key=openrouter_api_key,
+            api_base="https://openrouter.ai/api/v1"
         )
         Settings.embed_model = self.embed_model
         
