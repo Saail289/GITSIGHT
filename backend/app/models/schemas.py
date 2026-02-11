@@ -36,7 +36,7 @@ class QueryRequest(BaseModel):
     question: str = Field(..., description="Question about the repository")
     llm_model: Optional[str] = Field(
         default="nemotron",
-        description="LLM model to use (currently only nemotron)"
+        description="LLM model to use: 'nemotron' or 'gpt-oss'"
     )
     
     model_config = ConfigDict(

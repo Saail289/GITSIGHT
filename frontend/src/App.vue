@@ -53,6 +53,7 @@ const isIngested = ref(false)
 const currentRepoUrl = ref('')
 const apiHealthy = ref(false)
 const sidebarCollapsed = ref(false)
+const selectedModel = ref('nemotron') // 'nemotron' | 'gpt-oss'
 
 // UI Refs
 const messageListRef = ref(null)
@@ -199,7 +200,7 @@ const handleAskQuestion = async () => {
   isQuerying.value = true
 
   try {
-    const result = await api.queryRepository(currentRepoUrl.value, q)
+    const result = await api.queryRepository(currentRepoUrl.value, q, selectedModel.value)
 
     if (result.success) {
       const answer = result.data?.answer || 'I found relevant information but couldn\'t generate a response.'
@@ -601,6 +602,12 @@ const handleSignOut = async () => {
       <!-- Input Area -->
       <div class="chat-input-area">
         <div class="input-container glass-panel">
+          <div class="model-selector">
+            <select v-model="selectedModel" class="model-dropdown">
+              <option value="nemotron">Nemotron 30B</option>
+              <option value="gpt-oss">GPT-OSS 120B</option>
+            </select>
+          </div>
           <textarea
             v-model="question"
             class="chat-input"
@@ -1154,6 +1161,45 @@ export default {
 .chat-input-area {
   padding: 20px 24px;
   border-top: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.model-selector {
+  flex-shrink: 0;
+}
+
+.model-dropdown {
+  background: rgba(0, 255, 65, 0.08);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 8px;
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2300FF41' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 26px;
+}
+
+.model-dropdown:hover {
+  border-color: rgba(0, 255, 65, 0.5);
+  background-color: rgba(0, 255, 65, 0.12);
+}
+
+.model-dropdown:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+}
+
+.model-dropdown option {
+  background: #0a0f0a;
+  color: var(--text-primary);
+  padding: 8px;
 }
 
 .input-container {

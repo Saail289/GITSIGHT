@@ -259,9 +259,9 @@ Question: {question}
 
 Provide a well-structured, comprehensive answer. If asked about code, explain it thoroughly in organized sections:"""
         
-        # Generate answer using Nemotron via OpenRouter
+        # Generate answer using selected model via OpenRouter
         try:
-            answer = generate_answer(prompt, enable_reasoning=True)
+            answer = generate_answer(prompt, enable_reasoning=True, model_key=model_preference)
         except Exception as e:
             print(f"LLM error: {e}")
             answer = f"Error generating answer: {str(e)}"
@@ -280,7 +280,7 @@ Provide a well-structured, comprehensive answer. If asked about code, explain it
         return {
             "answer": answer,
             "sources": sources,
-            "model_used": "nemotron"
+            "model_used": model_preference or "nemotron"
         }
     
     def check_repo_exists(self, repo_url: str) -> bool:
