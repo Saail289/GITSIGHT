@@ -40,6 +40,10 @@ def get_openai_client() -> OpenAI:
     return OpenAI(
         base_url=OPENROUTER_BASE_URL,
         api_key=api_key,
+        default_headers={
+            "HTTP-Referer": "https://gitsight-ivory.vercel.app",
+            "X-Title": "GitSight",
+        }
     )
 
 
