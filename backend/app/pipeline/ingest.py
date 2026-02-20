@@ -123,16 +123,16 @@ class IngestPipeline:
     
     def _batch_embed(self, texts: List[str]) -> List[List[float]]:
         """
-        Generate embeddings for multiple texts in batch - MUCH faster.
-        No accuracy loss, same embeddings as sequential processing.
+        Generate embeddings for multiple texts in batch.
+        Uses LlamaIndex's standard embedding API (works with any embed model).
         """
         if not texts:
             return []
         
         print(f"Batch embedding {len(texts)} chunks (this is fast!)...")
-        # FastEmbed supports efficient batch embedding
-        embeddings = list(self.embed_model._model.embed(texts))
-        # Convert numpy float32 to Python float for JSON serialization
+        # Use LlamaIndex's standard batch embedding method
+        embeddings = self.embed_model.get_text_embedding_batch(texts)
+        # Ensure all values are Python floats for JSON serialization
         return [[float(x) for x in e] for e in embeddings]
     
     def process_documents(
