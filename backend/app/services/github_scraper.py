@@ -92,9 +92,20 @@ class GitHubScraper:
             print(f"Found {len(all_file_paths)} total files, fetching {len(files_to_fetch)} code files...")
             
             # Fetch all file contents in parallel using blob API
-            documents = asyncio.run(
-                self._parallel_fetch_blobs(files_to_fetch, owner, repo_name)
-            )
+            # Use nest_asyncio to allow running async code inside FastAPI's event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're inside an existing event loop (FastAPI/Uvicorn)
+                import nest_asyncio
+                nest_asyncio.apply()
+                documents = loop.run_until_complete(
+                    self._parallel_fetch_blobs(files_to_fetch, owner, repo_name)
+                )
+            except RuntimeError:
+                # No running event loop, safe to use asyncio.run()
+                documents = asyncio.run(
+                    self._parallel_fetch_blobs(files_to_fetch, owner, repo_name)
+                )
             
             # Add README at the beginning if exists
             readme_doc = self._fetch_readme(repo, repo_url)
