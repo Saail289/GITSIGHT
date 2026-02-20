@@ -1,6 +1,6 @@
 -- ============================================================
 -- SUPABASE SQL SETUP FOR GITHUB RAG ASSISTANT
--- LlamaIndex + Jina Embeddings + Hybrid Search
+-- LlamaIndex + OpenAI Embeddings + Hybrid Search
 -- ============================================================
 -- Run this script in Supabase SQL Editor
 -- ============================================================
@@ -18,13 +18,13 @@ DROP FUNCTION IF EXISTS delete_repo_documents CASCADE;
 DROP FUNCTION IF EXISTS check_repo_exists CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
 
--- Step 3: Create the new documents table with Jina embedding dimensions (768)
+-- Step 3: Create the new documents table with OpenAI embedding dimensions (1536)
 CREATE TABLE documents (
     id BIGSERIAL PRIMARY KEY,
     repo_url TEXT NOT NULL,
     file_path TEXT NOT NULL,
     content TEXT NOT NULL,
-    embedding vector(768),
+    embedding vector(1536),
     metadata JSONB DEFAULT '{}',
     user_id TEXT DEFAULT 'default',
     file_type TEXT,
@@ -53,7 +53,7 @@ ON documents (repo_url, user_id);
 
 -- Step 5: Create vector similarity search function
 CREATE OR REPLACE FUNCTION match_documents(
-    query_embedding vector(768),
+    query_embedding vector(1536),
     match_repo_url TEXT,
     match_threshold FLOAT DEFAULT 0.3,
     match_count INT DEFAULT 10
@@ -89,7 +89,7 @@ $$;
 
 -- Step 6: Create hybrid search function
 CREATE OR REPLACE FUNCTION hybrid_search(
-    query_embedding vector(768),
+    query_embedding vector(1536),
     query_text TEXT,
     match_repo_url TEXT,
     match_threshold FLOAT DEFAULT 0.3,

@@ -1,7 +1,7 @@
 """
 Database service for interacting with Supabase.
 Handles storage and retrieval of document embeddings.
-Updated for Jina embeddings (768 dimensions) and LlamaIndex integration.
+Updated for OpenAI embeddings (1536 dimensions) and LlamaIndex integration.
 """
 
 from supabase import create_client, Client
@@ -69,7 +69,7 @@ class DatabaseService:
         Search for similar documents using vector similarity.
         
         Args:
-            query_embedding: Query vector embedding (768 dimensions for Jina)
+            query_embedding: Query vector embedding (1536 dimensions for OpenAI)
             repo_url: Repository URL to filter by
             top_k: Number of results to return
             threshold: Minimum similarity threshold

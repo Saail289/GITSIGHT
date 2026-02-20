@@ -27,8 +27,8 @@ class Settings:
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     
     # Model settings (for reference)
-    EMBEDDING_MODEL: str = "jinaai/jina-embeddings-v2-base-code"
-    EMBEDDING_DIMENSION: int = 768
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
     RERANK_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     
     # LLM settings
