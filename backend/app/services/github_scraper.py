@@ -126,7 +126,7 @@ class GitHubScraper:
     
     async def _fetch_single_blob(self, session: aiohttp.ClientSession, file_info: Dict, 
                                   owner: str, repo_name: str) -> Optional[Dict]:
-        """Fetch a single file's content via GitHub Blob API (async)"""
+        """Fetch a single file's content via GitHub Blob API (async) with retry on rate limit"""
         sha = file_info['sha']
         path = file_info['path']
         
@@ -140,31 +140,41 @@ class GitHubScraper:
         if self.token:
             headers['Authorization'] = f'token {self.token}'
         
-        try:
-            async with session.get(url, headers=headers) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    
-                    # Decode base64 content
-                    content = base64.b64decode(data['content']).decode('utf-8')
-                    
-                    print(f"  ✓ {path}")
-                    return {
-                        'repo_url': file_info['repo_url'],
-                        'file_path': path,
-                        'content': content,
-                        'metadata': {
-                            'type': 'code',
-                            'language': path.split('.')[-1] if '.' in path else 'text',
-                            'size': file_info['size']
+        for attempt in range(3):  # Retry up to 3 times on rate limit
+            try:
+                async with session.get(url, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        # Decode base64 content
+                        content = base64.b64decode(data['content']).decode('utf-8')
+                        
+                        print(f"  ✓ {path}")
+                        return {
+                            'repo_url': file_info['repo_url'],
+                            'file_path': path,
+                            'content': content,
+                            'metadata': {
+                                'type': 'code',
+                                'language': path.split('.')[-1] if '.' in path else 'text',
+                                'size': file_info['size']
+                            }
                         }
-                    }
-                else:
-                    print(f"  ✗ {path}: HTTP {response.status}")
-                    return None
-        except Exception as e:
-            print(f"  ✗ {path}: {e}")
-            return None
+                    elif response.status in (403, 429):
+                        # Rate limited — back off and retry
+                        wait_time = 2 ** attempt  # 1s, 2s, 4s
+                        print(f"  ⏳ {path}: Rate limited (HTTP {response.status}), retry in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        print(f"  ✗ {path}: HTTP {response.status}")
+                        return None
+            except Exception as e:
+                print(f"  ✗ {path}: {e}")
+                return None
+        
+        print(f"  ✗ {path}: Failed after 3 retries (rate limited)")
+        return None
     
     async def _parallel_fetch_blobs(self, files_to_fetch: List[Dict], 
                                      owner: str, repo_name: str) -> List[Dict]:
